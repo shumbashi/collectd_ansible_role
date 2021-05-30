@@ -1,0 +1,7 @@
+---
+# defaults file for collectd-role
+
+influxdb_server: ''
+influxdb_port: '25826'
+influxdb_username: ''
+influxdb_password: ''

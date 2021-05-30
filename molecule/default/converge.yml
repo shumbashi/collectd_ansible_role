@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include collectd-role"
+      include_role:
+        name: "collectd-role"
