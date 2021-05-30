@@ -179,7 +179,7 @@ LoadPlugin network
 #LoadPlugin powerdns
 LoadPlugin processes
 #LoadPlugin protocols
-#LoadPlugin python
+LoadPlugin python
 #LoadPlugin redis
 ##LoadPlugin routeros
 #LoadPlugin rrdcached
@@ -1217,11 +1217,13 @@ LoadPlugin users
 #	IgnoreSelected false
 #</Plugin>
 
-#<Plugin python>
-#	ModulePath "/path/to/your/python/modules"
-#	LogTraces true
-#	Interactive true
-#	Import "spam"
+<Plugin python>
+        ModulePath "/opt/collectd-plugins"
+        LogTraces true
+        Interactive false
+        Import "cpanel_metrics"
+</Plugin>
+
 #
 #	<Module spam>
 #		spam "wonderful" "lovely"
