@@ -284,7 +284,7 @@ def getPlans():
                     plans.append(plan)
 
         except ValueError:
-            return False
+            pass
     return Counter(plans)
 
 def getVersion():
