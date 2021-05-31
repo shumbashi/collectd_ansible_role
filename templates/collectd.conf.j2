@@ -523,10 +523,12 @@ LoadPlugin users
 #</Plugin>
 
 <Plugin df>
-	MountPoint "/,/home,/boot"
-	ReportInodes true
-	ValuesAbsolute true
-	ValuesPercentage true
+  MountPoint "/"
+  MountPoint "/home"
+  MountPoint "/boot"
+  ReportInodes true
+  ValuesAbsolute true
+  ValuesPercentage true
 </Plugin>
 
 #<Plugin disk>
