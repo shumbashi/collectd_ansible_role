@@ -13,10 +13,10 @@ Role Variables
 
 Collectd in this configuration is using InlufxDB as networked backend to store metrics. Therefore you need to configure the following variables for InfluxDB connection details and authentication details
 
-influxdb_server: '' #InfluxDB IP address or hostname
-influxdb_port: '25826' #InfluxDB Port, defaults to 25826/UDP
-influxdb_username: '' #InfluxDB Username
-influxdb_password: '' #InfluxDB Password
+- influxdb_server: '' #InfluxDB IP address or hostname
+- influxdb_port: '25826' #InfluxDB Port, defaults to 25826/UDP
+- influxdb_username: '' #InfluxDB Username
+- influxdb_password: '' #InfluxDB Password
 
 Dependencies
 ------------
