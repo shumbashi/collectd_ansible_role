@@ -1,5 +1,11 @@
 ---
-- hosts: localhost
+- hosts: all
   remote_user: root
+  become: true
+  vars:
+  - influxdb_server: 'myserver.server.ly'
+  - influxdb_port: '25826'
+  - influxdb_username: 'username'
+  - influxdb_password: 'password'
   roles:
-    - collectd-role
+    - ../../.

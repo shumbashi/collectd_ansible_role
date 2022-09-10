@@ -1,4 +1,4 @@
-Collectd
+Collectd Ansible Role
 =========
 
 Ansible role to install and configure collectd on CentOS 7 with default plugins enabled for monitoring cPanel Servers
@@ -11,7 +11,7 @@ None
 Role Variables
 --------------
 
-Collectd in this configuration is using InlufxDB as networked backend to sstoreend metrics. Therefore you need to configure the following variables for InfluxDB connection details and authentication details
+Collectd in this configuration is using InlufxDB as networked backend to store metrics. Therefore you need to configure the following variables for InfluxDB connection details and authentication details
 
 influxdb_server: '' #InfluxDB IP address or hostname
 influxdb_port: '25826' #InfluxDB Port, defaults to 25826/UDP
@@ -21,7 +21,7 @@ influxdb_password: '' #InfluxDB Password
 Dependencies
 ------------
 
-None
+- libyanspider.firewall_ansible_role
 
 Example Playbook
 ----------------
@@ -30,12 +30,12 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: shumbashi.collectd_role, influxdb_server: xx.xx.xx.xx, influxdb_username: USERNAME, influxdb_password: PASSWORD }
+         - { role: libyanspider.collectd_ansible_role, influxdb_server: xx.xx.xx.xx, influxdb_username: USERNAME, influxdb_password: PASSWORD }
 
 License
 -------
 
-MIT
+BSD
 
 Author Information
 ------------------

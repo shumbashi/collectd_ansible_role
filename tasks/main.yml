@@ -1,57 +1,13 @@
 ---
 # tasks file for collectd-role
 
-- name: Install EPEL Release
-  yum:
-    name: epel-release
-    state: installed
-  become: true
-
-- name: Install Python-PIP and Setuptools
-  yum:
-    name: python-setuptools, python-pip
-    state: installed
-  become: true
+- name: All | Check variables status
+  include_tasks: check.yml
   
-- name: Install collectd packages
-  yum:
-    name: collectd, collectd-apache, collectd-smart
-    state: installed
-  become: true
+- name: ReHat | Include install tasks
+  include_tasks: install-RedHat.yml
+  when: ansible_os_family == "RedHat"
 
-- name: Genereate collectd config file
-  template:
-    src: collectd.conf.j2
-    dest: /etc/collectd.conf
-    backup: yes
-    force: yes
-  become: true
-
-- name: Create plugins folder
-  file:
-    path: /opt/collectd-plugins
-    state: directory
-  become: true
-
-- name: Upload custom python plugins
-  copy:
-    src: plugins/
-    dest: /opt/collectd-plugins
-  become: true
-
-- name: Ensure setuptools is installed
-  pip:
-    name: setuptools
-  become: true
-
-- name: Install collectd python package
-  pip:
-    name: collectd
-  become: true
-
-- name: Enable and start collectd service
-  service:
-    name: collectd
-    state: restarted
-    enabled: yes
-  become: true
+- name: RedHat | Include customize tasks
+  include_tasks: customize-RedHat.yml
+  when: ansible_os_family == "RedHat"

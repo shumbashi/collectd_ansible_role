@@ -1,0 +1,26 @@
+- name: Test the variable influxdb_server is filled. End the host if not.
+  block:
+    - name: Ending play...
+      ansible.builtin.debug:
+        msg: "influxdb_server is undefined. End of host."
+    - name: Ending play...
+      ansible.builtin.meta: end_host
+  when: influxdb_server is undefined or influxdb_server|length == 0
+
+- name: Test the variable influxdb_username is filled. End the host if not.
+  block:
+    - name: Ending play...
+      ansible.builtin.debug:
+        msg: "influxdb_username is undefined. End of host."
+    - name: Ending play...
+      ansible.builtin.meta: end_host
+  when: influxdb_username is undefined or influxdb_username|length == 0
+
+- name: Test the variable influxdb_password is filled. End the host if not.
+  block:
+    - name: Ending play...
+      ansible.builtin.debug:
+        msg: "influxdb_password is undefined. End of host."
+    - name: Ending play...
+      ansible.builtin.meta: end_host
+  when: influxdb_password is undefined or influxdb_password|length == 0

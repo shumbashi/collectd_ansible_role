@@ -1,0 +1,34 @@
+---
+- name: Genereate collectd config file
+  ansible.builtin.template:
+    src: collectd.conf.j2
+    dest: /etc/collectd.conf
+    backup: true
+    force: true
+    mode: 0644
+
+- name: Create plugins folder
+  ansible.builtin.file:
+    path: /opt/collectd-plugins
+    state: directory
+    mode: 0755
+
+- name: Upload custom python plugins
+  ansible.builtin.copy:
+    src: plugins/
+    dest: /opt/collectd-plugins
+    mode: 0644
+
+- name: Ensure setuptools is installed
+  ansible.builtin.pip:
+    name: setuptools
+
+- name: Install collectd python package
+  ansible.builtin.pip:
+    name: collectd
+
+- name: Enable and start collectd service
+  ansible.builtin.service:
+    name: collectd
+    state: restarted
+    enabled: yes

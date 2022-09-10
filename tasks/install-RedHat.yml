@@ -1,0 +1,15 @@
+---
+- name: Install EPEL Repository
+  ansible.builtin.yum:
+    name: epel-release
+    state: installed
+
+- name: Install Python-PIP and Setuptools
+  ansible.builtin.yum:
+    name: python-setuptools, python-pip
+    state: installed
+  
+- name: Install collectd packages
+  ansible.builtin.yum:
+    name: collectd, collectd-apache, collectd-smart
+    state: installed
