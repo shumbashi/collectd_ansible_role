@@ -9,6 +9,7 @@ import os
 import mmap
 from collections import Counter
 import subprocess
+import datetime
 
 try:
     import collectd
@@ -21,7 +22,7 @@ except ImportError:
     except:
         pass
 
-PLUGIN_NAME = 'cpanel'
+PLUGIN_NAME = "cpanel"
 FREQUENCY = 1.0
 DATAPOINT_COUNT = 0
 NOTIFICATION_COUNT = 0
@@ -38,7 +39,7 @@ def log(param):
     :return:  None
     """
 
-    if __name__ != '__main__':
+    if __name__ != "__main__":
         collectd.info("%s: %s" % (PLUGIN_NAME, param))
     else:
         sys.stderr.write("%s\n" % param)
@@ -59,7 +60,7 @@ def config(conf):
     """
 
     for kv in conf.children:
-        if kv.key == 'Frequency':
+        if kv.key == "Frequency":
             global FREQUENCY
             FREQUENCY = float(kv.values[0])
 
@@ -75,68 +76,90 @@ def read():
 
     active_users = getActiveUsersCount()
     suspended_users = getSuspendedUsersCount()
+    suspended_users_90 = getSuspendedUsersCount90d()
     total_users = active_users + suspended_users
     plans = getPlans()
     version = getVersion()
     domains = getDomains()
     bandwidth = getBandwidth()
 
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="active_users",
+        type="gauge",
+        values=[active_users],
+    ).dispatch()
 
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="active_users",
-                    type="gauge",
-                    values=[active_users]).dispatch()
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="suspended_users",
+        type="gauge",
+        values=[suspended_users],
+    ).dispatch()
 
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="suspended_users",
-                    type="gauge",
-                    values=[suspended_users]).dispatch()
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="suspended_users_90",
+        type="gauge",
+        values=[suspended_users_90],
+    ).dispatch()
 
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="total_users",
-                    type="gauge",
-                    values=[total_users]).dispatch()
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="total_users",
+        type="gauge",
+        values=[total_users],
+    ).dispatch()
 
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="domains",
-                    type="gauge",
-                    values=[domains]).dispatch()
+    collectd.Values(
+        plugin=PLUGIN_NAME, type_instance="domains", type="gauge", values=[domains]
+    ).dispatch()
 
     for plan in plans.items():
-        collectd.Values(plugin=PLUGIN_NAME,
-                        type_instance="plans",
-                        plugin_instance = plan[0],
-                        type="gauge",
-                        values=[plan[1]]).dispatch()
+        collectd.Values(
+            plugin=PLUGIN_NAME,
+            type_instance="plans",
+            plugin_instance=plan[0],
+            type="gauge",
+            values=[plan[1]],
+        ).dispatch()
 
     for user in bandwidth.items():
-        collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="bandwidth",
-                    plugin_instance = user[0],
-                    type="gauge",
-                    values=[user[1]]).dispatch()
-    
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="version",
-                    plugin_instance = version,
-                    type="gauge",
-                    values=[1]).dispatch()
+        collectd.Values(
+            plugin=PLUGIN_NAME,
+            type_instance="bandwidth",
+            plugin_instance=user[0],
+            type="gauge",
+            values=[user[1]],
+        ).dispatch()
 
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="datapoints",
-                    type="counter",
-                    values=[DATAPOINT_COUNT]).dispatch()
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="version",
+        plugin_instance=version,
+        type="gauge",
+        values=[1],
+    ).dispatch()
 
-    collectd.Values(plugin=PLUGIN_NAME,
-                    type_instance="notifications",
-                    type="counter",
-                    values=[NOTIFICATION_COUNT]).dispatch()
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="datapoints",
+        type="counter",
+        values=[DATAPOINT_COUNT],
+    ).dispatch()
+
+    collectd.Values(
+        plugin=PLUGIN_NAME,
+        type_instance="notifications",
+        type="counter",
+        values=[NOTIFICATION_COUNT],
+    ).dispatch()
 
     global SEND
     if SEND:
-        notif = collectd.Notification(plugin=PLUGIN_NAME,
-                                      type_instance="started",
-                                      type="objects")  # need a valid type for notification
+        notif = collectd.Notification(
+            plugin=PLUGIN_NAME, type_instance="started", type="objects"
+        )  # need a valid type for notification
         notif.severity = 4  # OKAY
         notif.message = "The %s plugin has just started" % PLUGIN_NAME
         notif.dispatch()
@@ -187,7 +210,11 @@ def flush(timeout, identifier):
     :return: None
     """
 
-    log("Plugin %s flushing timeout %s and identifier %s" % PLUGIN_NAME, timeout, identifier)
+    log(
+        "Plugin %s flushing timeout %s and identifier %s" % PLUGIN_NAME,
+        timeout,
+        identifier,
+    )
 
 
 def log_cb(severity, message):
@@ -215,6 +242,7 @@ def notification(notif):
     global NOTIFICATION_COUNT
     NOTIFICATION_COUNT += 1
 
+
 def getFilesInDir(path):
     """
     This method takes a file system path and returns a list of files and total count of files in the path
@@ -230,14 +258,15 @@ def getFilesInDir(path):
 
     return output, len(output)
 
+
 def matchFilesLine(path, file_name, line, inverted=False):
     """
-    This method takes a file system path and a filename and a string to search for, it also takes an option boolean keyword 'inverted', if set it 
+    This method takes a file system path and a filename and a string to search for, it also takes an option boolean keyword 'inverted', if set it
     will return True if the string is NOT found.
 
     """
 
-    file_path = path + '/' + file_name
+    file_path = path + "/" + file_name
     try:
         with open(file_path) as f:
             s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
@@ -254,15 +283,43 @@ def matchFilesLine(path, file_name, line, inverted=False):
     except ValueError:
         return False
 
+
+def getLineInFile(path, file_name, line):
+    """
+    This method takes a file system path and a filename and a string identifiying a line and returns the contents of that line
+    :param path: a file system path
+    :param file_name: a file name
+    :param line: a string to find in the file
+    :return: String
+    """
+
+    file_path = path + "/" + file_name
+    try:
+        with open(file_path) as f:
+            s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+            index = s.find(line)
+            if index != -1:
+                s.seek(index)
+                return s.readline()
+            else:
+                return False
+    except ValueError:
+        return False
+
+
 def getActiveUsersCount():
     path = "/var/cpanel/users"
     all_users_list, all_users_count = getFilesInDir(path)
 
     active_users = 0
     for user in all_users_list:
-        if matchFilesLine(path, user, 'SUSPENDED=1', inverted=True) and not user in USERS_BLACKLIST:
+        if (
+            matchFilesLine(path, user, "SUSPENDED=1", inverted=True)
+            and not user in USERS_BLACKLIST
+        ):
             active_users += 1
     return active_users
+
 
 def getSuspendedUsersCount():
     path = "/var/cpanel/users"
@@ -270,30 +327,60 @@ def getSuspendedUsersCount():
 
     suspended_users = 0
     for user in all_users_list:
-        if matchFilesLine(path, user, 'SUSPENDED=1', inverted=False) and not user in USERS_BLACKLIST:
+        if (
+            matchFilesLine(path, user, "SUSPENDED=1", inverted=False)
+            and not user in USERS_BLACKLIST
+        ):
             suspended_users += 1
     return suspended_users
+
+
+def getSuspendedUsersCount90d():
+    path = "/var/cpanel/users"
+    all_users_list, all_users_count = getFilesInDir(path)
+
+    suspended_users_90 = 0
+    for user in all_users_list:
+        if (
+            matchFilesLine(path, user, "SUSPENDED=1", inverted=False)
+            and not user in USERS_BLACKLIST
+        ):
+            suspended_time = getLineInFile(path, user, "SUSPENDTIME=")
+            if suspended_time:
+                suspended_epoch = int(suspended_time.split("=")[1])
+                now = datetime.datetime.now()
+                # get time object of 90 days ago
+                then = now - datetime.timedelta(days=90)
+                then_epoch = int(time.mktime(then.timetuple()))
+
+                # if suspended time is less than (happened before) 90 days ago
+                if suspended_epoch <= then_epoch:
+                    suspended_users_90 += 1
+
+    return suspended_users_90
+
 
 def getPlans():
     path = "/var/cpanel/users"
     all_users_list, _ = getFilesInDir(path)
     plans = []
     for user in all_users_list:
-        file_path = path + '/' + user
+        file_path = path + "/" + user
         try:
             with open(file_path) as f:
                 s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-                position = s.find('PLAN=')
+                position = s.find("PLAN=")
                 if position:
                     # We found a line matching PLAN=
                     s.seek(position)
                     line = s.readline()
-                    plan = line.split('=')[1].strip('\n')
+                    plan = line.split("=")[1].strip("\n")
                     plans.append(plan)
 
         except ValueError:
             pass
     return Counter(plans)
+
 
 def getBandwidth():
     path = "/var/cpanel/bandwidth.cache/"
@@ -301,7 +388,7 @@ def getBandwidth():
     bw = {}
     for user in all_users_list:
         if not user in USERS_BLACKLIST:
-            file_path = path + '/' + user
+            file_path = path + "/" + user
             try:
                 with open(file_path) as f:
                     s = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
@@ -312,21 +399,30 @@ def getBandwidth():
                 pass
     return bw
 
+
 def getVersion():
-    command = '/usr/local/cpanel/cpanel -V'
-    result,error  = subprocess.Popen(command, universal_newlines=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    command = "/usr/local/cpanel/cpanel -V"
+    result, error = subprocess.Popen(
+        command,
+        universal_newlines=True,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ).communicate()
     if not error:
         return result
-    return 'Unknown'
+    return "Unknown"
+
 
 def getDomains():
-    path='/etc/userdomains'
+    path = "/etc/userdomains"
     try:
-        with open(path, 'r') as f:
+        with open(path, "r") as f:
             lines = f.readlines()
         return len(lines) - 1
     except ValueError:
         return 0
+
 
 if __name__ != "__main__":
     # when running inside plugin register each callback
