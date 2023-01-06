@@ -8,8 +8,15 @@
   ansible.builtin.yum:
     name: python-setuptools, python-pip
     state: installed
+  when: not ansible_distribution == "AlmaLinux"
   
 - name: Install collectd packages
   ansible.builtin.yum:
     name: collectd, collectd-apache, collectd-smart
     state: installed
+
+- name: AlmaLinux | Install additional collectd packages
+  ansible.builtin.yum:
+    name: collectd-python, collectd-disk
+    state: installed
+  when: ansible_distribution == "AlmaLinux"
