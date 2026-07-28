@@ -1,2 +1,13 @@
 ---
 # handlers file for collectd-role
+- name: rebuildhttpdconf
+  ansible.builtin.command: /scripts/rebuildhttpdconf
+  become: true
+  become_user: root
+  notify:
+    - restart apache
+
+- name: restart apache
+  ansible.builtin.service:
+    name: httpd
+    state: restarted
